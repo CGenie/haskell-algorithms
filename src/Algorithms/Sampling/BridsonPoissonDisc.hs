@@ -21,7 +21,7 @@ totalSamples (Samples {active = active, inactive = inactive}) = active ++ inacti
 
 
 findCandidatesInAnnulus :: Board2D -> Annulus2D -> Int -> IO [Point2D]
-findCandidatesInAnnulus board annulus 0 = return []
+findCandidatesInAnnulus _ _ 0 = return []
 findCandidatesInAnnulus board
                      annulus@(Annulus2D {annulusCenter = p, radiusm = rm, radiusM = rM})
                      numCandidates = do
@@ -54,30 +54,26 @@ sampleWithOutsideCalculate Samples {active = activeSamples, inactive = inactiveS
                            outside
                            _ =
                        Samples {
-                               active = activeSamples ++ outside,
+                               active = activeSamples ++ [head outside],
                                inactive = inactiveSamples
                        }
 
 
 bridsonPoissonDiscFindNew :: Board2D -> Samples -> Int -> Double -> IO Samples
-bridsonPoissonDiscFindNew board
+bridsonPoissonDiscFindNew _
                           samples@(Samples {active = [], inactive = _})
                           _
                           _ = return samples
 bridsonPoissonDiscFindNew board
-                          samples@(Samples {active = activeSamples, inactive = inactiveSamples})
+                          samples@(Samples {active = activeSamples, inactive = _})
                           numCandidates
                           discRadius = do
-    pts <- uniform2D board 1
-    let pt = head pts
-
     rInt <- randomRIO (0, (length activeSamples) - 1)
     let rSample = activeSamples !! rInt
     let annulus = Annulus2D {annulusCenter = rSample, radiusm = discRadius, radiusM = 2.0*discRadius}
 
     candidates <- findCandidatesInAnnulus board annulus numCandidates
-
-    let outside = filter (\p -> (distanceFromSet p (totalSamples samples) >= discRadius)) candidates
+    let outside = filter (\p -> distanceFromSet p (totalSamples samples) >= discRadius) candidates
 
     return $ sampleWithOutsideCalculate samples outside rInt
 

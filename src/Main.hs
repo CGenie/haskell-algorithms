@@ -4,7 +4,7 @@ where
 import Graphics.UI.GLUT
 
 import Geometry
-import Algorithms.Sampling (uniform2D, mitchellBestCandidate)
+import Algorithms.Sampling (uniform2D, mitchellBestCandidate, bridsonPoissonDisc)
 
 
 showUniform2D :: IO ()
@@ -21,7 +21,7 @@ showUniform2D = do
 
 showMitchellBestCandidate :: IO ()
 showMitchellBestCandidate = do
-    _window <- createWindow "Uniform2D"
+    _window <- createWindow "Mitchell Best Candidate"
 
     let board = Board2D 200 200
     pts <- mitchellBestCandidate board 400 10 10
@@ -29,6 +29,19 @@ showMitchellBestCandidate = do
     displayCallback $= displayPointsCallback board pts
     
     mainLoop
+
+
+showBridsonPoissonDisc :: IO ()
+showBridsonPoissonDisc = do
+    _window <- createWindow "Bridson Poisson-disc"
+
+    let board = Board2D 200 200
+    pts <- bridsonPoissonDisc board 1000 10 10
+
+    displayCallback $= displayPointsCallback board pts
+    
+    mainLoop
+
 
 
 displayPointsCallback :: Board2D -> [Point2D] -> DisplayCallback
@@ -45,4 +58,6 @@ displayPointsCallback board pts = do
 
 main = do
     (_progName, _args) <- getArgsAndInitialize
-    showMitchellBestCandidate
+    --showUniform2D
+    --showMitchellBestCandidate
+    showBridsonPoissonDisc
