@@ -4,60 +4,43 @@ where
 import Graphics.UI.GLUT
 
 import Geometry
-import Algorithms.Sampling (uniform2D, mitchellBestCandidate, bridsonPoissonDisc)
+import Algorithms.Sampling (visualizeSamplingAlgorithm)
+import qualified Algorithms.Sampling.BridsonPoissonDisc as BridsonPoissonDisc
+import qualified Algorithms.Sampling.MitchellBestCandidate as MitchellBestCandidate
+import qualified Algorithms.Sampling.Uniform as Uniform
 
 
-showUniform2D :: IO ()
-showUniform2D = do
-    _window <- createWindow "Uniform2D"
-
-    let board = Board2D 200 200
-    pts <- uniform2D board 400
-
-    displayCallback $= displayPointsCallback board pts
-    
-    mainLoop
+bridsonPoissonDiscAlgorithm = BridsonPoissonDisc.BridsonPoissonDiscAlgorithm $
+        BridsonPoissonDisc.BridsonPoissonDiscData {
+            BridsonPoissonDisc.board = Board2D 200 200,
+            BridsonPoissonDisc.numTotalSamples = 400,
+            BridsonPoissonDisc.numCandidates = 10,
+            BridsonPoissonDisc.discRadius = 10
+        }
 
 
-showMitchellBestCandidate :: IO ()
-showMitchellBestCandidate = do
-    _window <- createWindow "Mitchell Best Candidate"
-
-    let board = Board2D 200 200
-    pts <- mitchellBestCandidate board 400 10 10
-
-    displayCallback $= displayPointsCallback board pts
-    
-    mainLoop
+mitchellBestCandidateAlgorithm = MitchellBestCandidate.MitchellBestCandidateAlgorithm $
+    MitchellBestCandidate.MitchellBestCandidateData {
+        MitchellBestCandidate.board = Board2D 200 200,
+        MitchellBestCandidate.numTotalSamples = 400,
+        MitchellBestCandidate.numInitialSamples = 10,
+        MitchellBestCandidate.numCandidates = 10
+    }
 
 
-showBridsonPoissonDisc :: IO ()
-showBridsonPoissonDisc = do
-    _window <- createWindow "Bridson Poisson-disc"
+uniformAlgorithm = Uniform.UniformAlgorithm $
+    Uniform.UniformData {
+        Uniform.board = Board2D 200 200,
+        Uniform.numSamples = 400
+    }
 
-    let board = Board2D 200 200
-    pts <- bridsonPoissonDisc board 1000 10 10
-
-    displayCallback $= displayPointsCallback board pts
-    
-    mainLoop
-
-
-
-displayPointsCallback :: Board2D -> [Point2D] -> DisplayCallback
-displayPointsCallback board pts = do
-    clear [ColorBuffer]
-
-    let circles = map (\p -> Circle2D p 1) pts
-    let circleVertices = map (glPointCircleVertices board) circles
-
-    mapM_ (drawCircle board) circles
-
-    flush
 
 
 main = do
     (_progName, _args) <- getArgsAndInitialize
-    --showUniform2D
-    --showMitchellBestCandidate
-    showBridsonPoissonDisc
+
+    visualizeSamplingAlgorithm $ uniformAlgorithm
+
+    --visualizeSamplingAlgorithm $ mitchellBestCandidateAlgorithm
+
+    --visualizeSamplingAlgorithm $ bridsonPoissonDiscAlgorithm

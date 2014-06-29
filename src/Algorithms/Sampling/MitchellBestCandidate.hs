@@ -2,21 +2,36 @@ module Algorithms.Sampling.MitchellBestCandidate
 where
 
 import Control.Monad
-import System.Random (randomRIO)
 
-import Algorithms.Sampling.Uniform (uniform2D)
+import Algorithms.Data
+import qualified Algorithms.Sampling.Uniform as Uniform
 import Geometry
 
 
+data MitchellBestCandidateData = MitchellBestCandidateData {
+    board :: Board2D,
+    numTotalSamples :: Int,
+    numInitialSamples :: Int,
+    numCandidates :: Int
+}
+data MitchellBestCandidateAlgorithm = MitchellBestCandidateAlgorithm MitchellBestCandidateData
+instance Algorithm MitchellBestCandidateAlgorithm where
+    algorithmVisualize (MitchellBestCandidateAlgorithm d) = mitchellBestCandidate d
+    algorithmWindowTitle _ = "Mitchell's Best Candidate"
+
+
+
 mitchellFindNewSample :: Board2D -> Int -> [Point2D] -> IO [Point2D]
-mitchellFindNewSample board numCandidates samples = do
-    candidates <- uniform2D board numCandidates
-    return $ samples ++ [farthestPoint candidates samples]
+mitchellFindNewSample b nc s = do
+    candidates <- Uniform.uniform2D (Uniform.UniformData {Uniform.board = b,
+                                                          Uniform.numSamples = nc})
+    return $ s ++ [farthestPoint candidates s]
 
 
-mitchellBestCandidate :: Board2D -> Int -> Int -> Int -> IO [Point2D]
-mitchellBestCandidate board numTotalSamples numInitialSamples numCandidates = do
-    samples <- uniform2D board numInitialSamples
-    foldM mitchellFindNewSample' samples [0..(numTotalSamples - numInitialSamples)]
+mitchellBestCandidate :: MitchellBestCandidateData -> IO [Point2D]
+mitchellBestCandidate d = do
+    samples <- Uniform.uniform2D (Uniform.UniformData {Uniform.board = board d,
+                                                       Uniform.numSamples = numInitialSamples d})
+    foldM mitchellFindNewSample' samples [0..((numTotalSamples d) - (numInitialSamples d))]
     where
-        mitchellFindNewSample' samples i = mitchellFindNewSample board numCandidates samples
+        mitchellFindNewSample' samples _ = mitchellFindNewSample (board d) (numCandidates d) samples
